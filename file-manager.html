@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+    
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>知识库文件管理</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+
+<body>
+    <script src="js/main.js"></script>
+    <script src="js/file-manager.js"></script>
+
+    <div class="container">
+        <div class="header">
+            <div class="nav-links">
+                <a href="index.html" class="nav-link">Back to Homepage</a>
+            </div>
+            <h1>Knowledge Base File Manager</h1>
+            <p>Manage and view uploaded files, support filtering and deleting by tags</p>
+        </div>
+
+        <div class="manager-main-content">
+            <!-- 统计信息 -->
+            <div class="stats">
+                <div class="stat-card">
+                    <div class="stat-number" id="totalFiles">0</div>
+                    <div class="stat-label">Total number of files</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" id="totalTags">0</div>
+                    <div class="stat-label">Number of tags</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" id="filteredFiles">0</div>
+                    <div class="stat-label">Currently shown</div>
+                </div>
+            </div>
+
+            <!-- 控制面板 -->
+            <div class="manager-controls">
+                <div class="manager-form-group">
+                    <label for="tagFilter">filter by tag</label>
+                    <input type="text" id="tagFilter" placeholder="输入标签名称筛选文件">
+                </div>
+                <button class="btn btn-primary" onclick="loadFiles()">Refresh</button>
+                <button class="btn btn-primary" onclick="loadFiles(document.getElementById('tagFilter').value)">Search by tag</button>
+            </div>
+
+            <!-- 消息提示区域 -->
+            <div id="messageArea"></div>
+
+            <!-- 文件列表 -->
+            <div class="files-section">
+                <h2 class="section-title">File list</h2>
+                <div id="filesContainer">
+                    <div class="loading">loading...</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</body>
+</html>

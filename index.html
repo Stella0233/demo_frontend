@@ -1,473 +1,95 @@
 <!DOCTYPE html>
-<html lang="zh-CN">
+<html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>RAG知识库问答系统</title>
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            min-height: 100vh;
-            padding: 20px;
-        }
-
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
-            background: white;
-            border-radius: 20px;
-            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
-            overflow: hidden;
-        }
-
-        .header {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            padding: 30px;
-            text-align: center;
-        }
-
-        .header h1 {
-            font-size: 2.5em;
-            margin-bottom: 10px;
-            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
-        }
-
-        .header p {
-            font-size: 1.1em;
-            opacity: 0.9;
-        }
-
-        .main-content {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 30px;
-            padding: 40px;
-        }
-
-        .section {
-            background: #f8f9fa;
-            padding: 30px;
-            border-radius: 15px;
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
-            transition: transform 0.3s ease;
-        }
-
-        .section:hover {
-            transform: translateY(-5px);
-        }
-
-        .section h2 {
-            color: #333;
-            margin-bottom: 20px;
-            font-size: 1.8em;
-            border-bottom: 3px solid #667eea;
-            padding-bottom: 10px;
-        }
-
-        .form-group {
-            margin-bottom: 20px;
-        }
-
-        label {
-            display: block;
-            margin-bottom: 8px;
-            font-weight: 600;
-            color: #555;
-        }
-
-        input[type="text"], 
-        input[type="file"], 
-        select, 
-        textarea {
-            width: 100%;
-            padding: 12px;
-            border: 2px solid #ddd;
-            border-radius: 8px;
-            font-size: 16px;
-            transition: border-color 0.3s ease;
-        }
-
-        input[type="text"]:focus, 
-        input[type="file"]:focus, 
-        select:focus, 
-        textarea:focus {
-            outline: none;
-            border-color: #667eea;
-            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
-        }
-
-        textarea {
-            resize: vertical;
-            min-height: 100px;
-        }
-
-        .btn {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            padding: 12px 30px;
-            border: none;
-            border-radius: 8px;
-            font-size: 16px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-        }
-
-        .btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
-        }
-
-        .btn:active {
-            transform: translateY(0);
-        }
-
-        .btn:disabled {
-            background: #ccc;
-            cursor: not-allowed;
-            transform: none;
-            box-shadow: none;
-        }
-
-        .loading {
-            display: none;
-            text-align: center;
-            padding: 20px;
-            color: #667eea;
-        }
-
-        .loading.show {
-            display: block;
-        }
-
-        .spinner {
-            border: 4px solid #f3f3f3;
-            border-top: 4px solid #667eea;
-            border-radius: 50%;
-            width: 40px;
-            height: 40px;
-            animation: spin 1s linear infinite;
-            margin: 0 auto 10px;
-        }
-
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-
-        .result {
-            margin-top: 20px;
-            padding: 20px;
-            background: #fff;
-            border-radius: 8px;
-            border-left: 4px solid #667eea;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-        }
-
-        .result h3 {
-            color: #333;
-            margin-bottom: 15px;
-        }
-
-        .answer {
-            background: #e8f4f8;
-            padding: 15px;
-            border-radius: 8px;
-            margin-bottom: 15px;
-            border-left: 4px solid #17a2b8;
-        }
-
-        .thoughts {
-            background: #f8f9fa;
-            padding: 15px;
-            border-radius: 8px;
-            border-left: 4px solid #28a745;
-        }
-
-        .thoughts h4 {
-            color: #28a745;
-            margin-bottom: 10px;
-        }
-
-        .thought-item {
-            margin-bottom: 10px;
-            padding: 10px;
-            background: white;
-            border-radius: 5px;
-            border: 1px solid #dee2e6;
-        }
-
-        .success {
-            color: #28a745;
-            background: #d4edda;
-            border: 1px solid #c3e6cb;
-            padding: 12px;
-            border-radius: 5px;
-            margin-top: 15px;
-        }
-
-        .error {
-            color: #dc3545;
-            background: #f8d7da;
-            border: 1px solid #f5c6cb;
-            padding: 12px;
-            border-radius: 5px;
-            margin-top: 15px;
-        }
-
-        @media (max-width: 768px) {
-            .main-content {
-                grid-template-columns: 1fr;
-                gap: 20px;
-                padding: 20px;
-            }
-            
-            .header h1 {
-                font-size: 2em;
-            }
-        }
-    </style>
+    <title>RAG Knowledge Base Q&A System</title>
+    <!-- 在 <head> 中 -->
+    <link rel="stylesheet" href="css/style.css">
 </head>
+
 <body>
     <div class="container">
         <div class="header">
-            <h1>🧠 RAG Knowledge Base</h1>
-            <p>your own agentic RAG knowledge base</p>
+            <div class="nav-links">
+                <a href="file-manager.html" class="nav-link">📁 File Manager</a>
+            </div>
+            <h1>🧠 RAG Knowledge Base Q&A System</h1>
+            <p>Upload documents and get intelligent answers</p>
         </div>
 
         <div class="main-content">
-            <!-- 文件上传区域 -->
-            <div class="section">
-                <h2>📄 File Upload</h2>
-                <form id="uploadForm">
-                    <div class="form-group">
-                        <label for="fileInput">Choose File:</label>
-                        <input type="file" id="fileInput" name="file" accept=".txt,.pdf,.doc,.docx,.md" required>
+            <!-- Sidebar -->
+            <div class="sidebar">
+                <!-- Upload Section -->
+                <div class="upload-section">
+                    <h2>📄 Upload Document</h2>
+                    <form id="uploadForm">
+                        <div class="form-group">
+                            <label for="fileInput">Choose File:</label>
+                            <input type="file" id="fileInput" name="file" accept=".txt,.pdf,.doc,.docx,.md" required>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="tagInput">Document Tag:</label>
+                            <input type="text" id="tagInput" name="tag" placeholder="Enter tag (e.g., tech-docs, manual)" required>
+                        </div>
+                        
+                        <button type="submit" class="btn">Upload Document</button>
+                    </form>
+                    
+                    <div id="uploadLoading" class="loading">
+                        <div class="spinner"></div>
+                        <p>Processing document...</p>
                     </div>
                     
-                    <div class="form-group">
-                        <label for="tagInput">Tag:</label>
-                        <input type="text" id="tagInput" name="tag" placeholder="Enter Tag）" required>
-                    </div>
-                    
-                    <button type="submit" class="btn">Upload File</button>
-                </form>
-                
-                <div id="uploadLoading" class="loading">
-                    <div class="spinner"></div>
-                    <p>Processing...</p>
+                    <div id="uploadResult"></div>
                 </div>
-                
-                <div id="uploadResult"></div>
+
+                <!-- Session Management -->
+                <div class="session-section">
+                    <h3>💬 Session Management</h3>
+                    <input type="text" id="sessionIdInput" class="session-input" placeholder="Session ID" value="default">
+                    <button class="new-session-btn" onclick="startNewSession()">Start New Session</button>
+                </div>
             </div>
 
-            <!-- 问答区域 -->
-            <div class="section">
-                <h2>❓ Query</h2>
-                <form id="queryForm">
-                    <div class="form-group">
-                        <label for="questionInput">Question:</label>
-                        <textarea id="questionInput" name="question" placeholder="Enter your question..." required></textarea>
-                    </div>
-                    
-                    <div class="form-group">
-                        <label for="queryTagInput">Tag (Optional):</label>
-                        <input type="text" id="queryTagInput" name="tag" placeholder="Specify a range">
-                    </div>
-                    
-                    <button type="submit" class="btn">Fetch Answer</button>
-                </form>
-                
-                <div id="queryLoading" class="loading">
-                    <div class="spinner"></div>
-                    <p>Thinking and Generating...</p>
+            <!-- Chat Area -->
+            <div class="chat-area">
+                <div class="chat-header">
+                    <h2>❓ Intelligent Q&A</h2>
                 </div>
-                
-                <div id="queryResult"></div>
+
+                <div class="chat-messages" id="chatMessages">
+                    <div class="message bot-message">
+                        <strong>Assistant:</strong><br>
+                        Hello! I'm ready to help you with questions about your uploaded documents. You can ask me anything about the content in your knowledge base.
+                    </div>
+                </div>
+
+                <div class="chat-input-area">
+                    <div class="input-options">
+                        <div class="option-group">
+                            <input type="checkbox" id="styleCheckbox">
+                            <label for="styleCheckbox">Official Document Format</label>
+                        </div>
+                    </div>
+
+                    <form id="queryForm">
+                        <textarea id="questionInput" class="chat-input" placeholder="Type your question here..." required></textarea>
+                        
+                        <div class="input-controls">
+                            <input type="text" id="queryTagInput" placeholder="Optional: specify tag to search" style="flex: 1; margin-right: 10px;">
+                            <button type="submit" class="send-btn">Send</button>
+                        </div>
+                    </form>
+                </div>
             </div>
         </div>
     </div>
-
-    <script>
-        // API 基础地址
-        const API_BASE = 'http://localhost:8000';
-
-        // 文件上传功能
-        document.getElementById('uploadForm').addEventListener('submit', async function(e) {
-            e.preventDefault();
-            
-            const formData = new FormData();
-            const fileInput = document.getElementById('fileInput');
-            const tagInput = document.getElementById('tagInput');
-            const uploadLoading = document.getElementById('uploadLoading');
-            const uploadResult = document.getElementById('uploadResult');
-            const submitBtn = this.querySelector('button[type="submit"]');
-            
-            // 验证文件
-            if (!fileInput.files[0]) {
-                showMessage(uploadResult, 'Choose a File', 'error');
-                return;
-            }
-            
-            // 验证标签
-            if (!tagInput.value.trim()) {
-                showMessage(uploadResult, 'Enter tag', 'error');
-                return;
-            }
-            
-            // 显示加载状态
-            uploadLoading.classList.add('show');
-            submitBtn.disabled = true;
-            uploadResult.innerHTML = '';
-            
-            // 准备表单数据
-            formData.append('file', fileInput.files[0]);
-            formData.append('tag', tagInput.value.trim());
-            
-            try {
-                const response = await fetch(`${API_BASE}/upload-data`, {
-                    method: 'POST',
-                    body: formData
-                });
-                
-                const result = await response.json();
-                
-                if (response.ok) {
-                    showMessage(uploadResult, `✅ ${result.message}`, 'success');
-                    // 重置表单
-                    fileInput.value = '';
-                    tagInput.value = '';
-                } else {
-                    showMessage(uploadResult, `❌ Upload Failed: ${result.detail || 'Unknown Error'}`, 'error');
-                }
-                
-            } catch (error) {
-                console.error('Upload error:', error);
-                showMessage(uploadResult, `❌ Upload Failed: ${error.message}`, 'error');
-            } finally {
-                uploadLoading.classList.remove('show');
-                submitBtn.disabled = false;
-            }
-        });
-
-        // 问答功能
-        document.getElementById('queryForm').addEventListener('submit', async function(e) {
-            e.preventDefault();
-            
-            const questionInput = document.getElementById('questionInput');
-            const queryTagInput = document.getElementById('queryTagInput');
-            const queryLoading = document.getElementById('queryLoading');
-            const queryResult = document.getElementById('queryResult');
-            const submitBtn = this.querySelector('button[type="submit"]');
-            
-            // 验证问题
-            if (!questionInput.value.trim()) {
-                showMessage(queryResult, 'Enter Question', 'error');
-                return;
-            }
-            
-            // 显示加载状态
-            queryLoading.classList.add('show');
-            submitBtn.disabled = true;
-            queryResult.innerHTML = '';
-            
-            // 准备查询参数
-            const params = new URLSearchParams();
-            params.append('question', questionInput.value.trim());
-            
-            if (queryTagInput.value.trim()) {
-                params.append('tag', queryTagInput.value.trim());
-            }
-            
-            try {
-                const response = await fetch(`${API_BASE}/query?${params.toString()}`);
-                const result = await response.json();
-                
-                if (response.ok) {
-                    displayQueryResult(queryResult, result);
-                } else {
-                    showMessage(queryResult, `❌ Query Failed: ${result.detail || 'Unknown Mistake'}`, 'error');
-                }
-                
-            } catch (error) {
-                console.error('Query error:', error);
-                showMessage(queryResult, `❌ Query Failed: ${error.message}`, 'error');
-            } finally {
-                queryLoading.classList.remove('show');
-                submitBtn.disabled = false;
-            }
-        });
-
-        // 显示查询结果
-        function displayQueryResult(container, result) {
-            const html = `
-                <div class="result">
-                    <h3>💡 Answer</h3>
-                    <div class="thoughts">
-                        <h4>🤔 Thinking Process</h4>
-                        ${formatThoughts(result.thoughts)}
-                    </div>
-                    
-                    <div class="answer">
-                        <strong>Answer:</strong><br>
-                        ${result.answer || 'No Answer'}
-                    </div>
-                </div>
-            `;
-            container.innerHTML = html;
-        }
-
-        // 格式化思考过程
-        function formatThoughts(thoughts) {
-            if (!thoughts || thoughts.length === 0) {
-                return '<p>no thinking process record</p>';
-            }
-            
-            if (Array.isArray(thoughts)) {
-                return thoughts.map((thought, index) => {
-                    if (typeof thought === 'string') {
-                        return `<div class="thought-item"><strong>step ${index + 1}:</strong> ${thought}</div>`;
-                    } else if (typeof thought === 'object') {
-                        return `<div class="thought-item"><strong>step ${index + 1}:</strong> ${JSON.stringify(thought, null, 2)}</div>`;
-                    }
-                    return `<div class="thought-item">${thought}</div>`;
-                }).join('');
-            } else if (typeof thoughts === 'string') {
-                return `<div class="thought-item">${thoughts}</div>`;
-            } else {
-                return `<div class="thought-item">${JSON.stringify(thoughts, null, 2)}</div>`;
-            }
-        }
-
-        // 显示消息
-        function showMessage(container, message, type) {
-            container.innerHTML = `<div class="${type}">${message}</div>`;
-        }
-
-        // 页面加载完成后的初始化
-        document.addEventListener('DOMContentLoaded', function() {
-            console.log('RAG knowledge base has been loaded');
-            
-            // 测试API连接
-            fetch(`${API_BASE}/`)
-                .then(response => response.json())
-                .then(data => {
-                    console.log('API succeeded:', data);
-                })
-                .catch(error => {
-                    console.error('API failed:', error);
-                });
-        });
-    </script>
+    
+    <script src="js/main.js"></script>
 </body>
+
 </html>
